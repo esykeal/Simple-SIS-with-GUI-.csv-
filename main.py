@@ -8,6 +8,11 @@ from PyQt6 import QtWidgets
 from AddDialog_folder.AddStudent_Dialog import Ui_AddStudent_Dialog
 from AddDialog_folder.AddProgram_Dialog import Ui_AddProgram_Dialog
 from AddDialog_folder.AddCollege_Dialog import Ui_AddCollege_Dialog
+
+from EditDialog_folder.EditStudent_Dialog import Ui_EditStudent_Dialog
+from EditDialog_folder.EditProgram_Dialog import Ui_EditProgram_Dialog
+from EditDialog_folder.EditCollege_Dialog import Ui_EditCollege_Dialog
+
 from final2 import Ui_MainWindow
 
 #Function to create csv file
@@ -163,6 +168,133 @@ class AddCollegeDialog(QDialog):
 
         self.accept()
 
+class EditStudentDialog(QDialog):
+    def __init__(self, parent, row_data, row_index):
+        super().__init__(parent)
+        self.ui = Ui_EditStudent_Dialog()
+        self.ui.setupUi(self)
+        self.row_index = row_index
+        self.parent = parent
+
+        self.ui.ID_Number_input.setText(row_data[0])
+        self.ui.First_Name_input.setText(row_data[1])
+        self.ui.Last_Name_input.setText(row_data[2])
+        self.ui.Year_Level_comboBox.setCurrentText(row_data[3])
+        self.ui.Gender_input.setText(row_data[4])
+        self.ui.Program_Code_input.setText(row_data[5])
+
+        self.ui.Save_button.clicked.connect(self.save_changes)
+        self.ui.Cancel_button.clicked.connect(self.reject)
+
+    def save_changes(self):
+        updated_row = [
+            self.ui.ID_Number_input.text(),
+            self.ui.First_Name_input.text(),
+            self.ui.Last_Name_input.text(),
+            self.ui.Year_Level_comboBox.currentText(),
+            self.ui.Gender_input.text(),
+            self.ui.Program_Code_input.text()
+        ]
+
+        filename = config_file.student_filename
+
+        with open(filename, "r", newline="") as csv_file:
+            csv_reader = csv.reader(csv_file)
+            data = list(csv_reader)
+
+        if 1 <= self.row_index < len(data):
+            data[self.row_index] = updated_row
+
+        with open(filename, "w", newline="") as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerows(data)
+
+        print("✅ Student data updated successfully.")
+
+        self.parent.load_csv_to_table(self.parent.student_table, filename, "STUDENTS")
+
+        self.accept()
+
+class EditProgramDialog(QDialog):
+    def __init__(self, parent, row_data, row_index):
+        super().__init__(parent)
+        self.ui = Ui_EditProgram_Dialog()
+        self.ui.setupUi(self)
+        self.row_index = row_index
+        self.parent = parent
+
+        self.ui.ProgramCode_input.setText(row_data[0])
+        self.ui.ProgramName_input.setText(row_data[1])
+        self.ui.CollegeCode_input.setText(row_data[2])
+
+        self.ui.Save_button.clicked.connect(self.save_changes)
+        self.ui.Cancel_button.clicked.connect(self.reject)
+
+    def save_changes(self):
+        updated_row = [
+            self.ui.ProgramCode_input.text(),
+            self.ui.ProgramName_input.text(),
+            self.ui.CollegeCode_input.text()
+        ]
+
+        filename = config_file.program_filename
+
+        with open(filename, "r", newline="") as csv_file:
+            csv_reader = csv.reader(csv_file)
+            data = list(csv_reader)
+
+        if 1 <= self.row_index < len(data):
+            data[self.row_index] = updated_row
+
+        with open(filename, "w", newline="") as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerows(data)
+
+        print(" ✅Program data updated succesfully.")
+
+        self.parent.load_csv_to_table(self.parent.program_table, filename, "PROGRAMS")
+
+        self.accept()        
+
+class EditCollegeDialog(QDialog):
+        def __init__(self, parent, row_data, row_index):
+            super().__init__(parent)
+            self.ui = Ui_EditCollege_Dialog()
+            self.ui.setupUi(self)
+            self.row_index = row_index
+            self.parent = parent
+
+            self.ui.CollegeCode_input.setText(row_data[0])
+            self.ui.CollegeName_input.setText(row_data[1])
+
+            self.ui.Save_button.clicked.connect(self.save_changes)
+            self.ui.Cancel_button.clicked.connect(self.reject)
+
+        def save_changes(self):
+            updated_row = [
+                self.ui.CollegeCode_input.text(),
+                self.ui.CollegeName_input.text()
+            ] 
+
+            filename = config_file.college_filename
+
+            with open(filename, "r", newline="") as csv_file:
+                csv_reader = csv.reader(csv_file)
+                data = list(csv_reader)
+
+            if 1 <= self.row_index < len(data):
+                data[self.row_index] = updated_row
+
+            with open(filename, "w", newline="") as file:
+                csv_writer = csv.writer(file)
+                csv_writer.writerows(data)
+
+            print("✅ College data updated succesfully.")
+
+            self.parent.load_csv_to_table(self.parent.student_table, filename, "COLLEGES")
+
+            self.accept()
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -269,9 +401,36 @@ class MainWindow(QMainWindow):
     #Function to edit the row
     def edit_row(self, table_widget, filename, row_index):
         print(f"Editing row {row_index} in {filename}")
-        #Add fucntion here to open the Edit DIALOG HERE
+        
+        with open(filename, "r", newline="") as csv_file:
+            csv_reader = csv.reader(csv_file)
+            data = list (csv_reader)
 
-    
+
+        row_index = row_index + 1
+
+        if row_index < 1 or row_index >= len(data):
+            print("Invalid row index. Skipping edit.")
+            return
+
+        row_data = data[row_index]
+
+        if filename == config_file.student_filename:
+            dialog = EditStudentDialog(self, row_data, row_index)
+            table_type = "STUDENTS"
+        elif filename == config_file.program_filename:
+            dialog = EditProgramDialog(self, row_data, row_index)
+            table_type = "PROGRAMS"
+        elif filename == config_file.college_filename:
+            dialog = EditCollegeDialog(self, row_data, row_index)
+            table_type = "COLLEGES"
+        else:
+            print("⚠️ Unknown CSV file. Skipping edit.")
+            return
+        
+        if dialog.exec():  # User clicked Save
+            self.load_csv_to_table(table_widget, filename, table_type)
+
     #Function to delete the row
     def delete_row(self, table_widget, filename, row_index):
         print(f"Deleting row {row_index} from {filename}")

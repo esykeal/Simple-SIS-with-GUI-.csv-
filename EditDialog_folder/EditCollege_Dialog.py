@@ -9,7 +9,7 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 
-class Ui_Edit_College_Dialog(object):
+class Ui_EditCollege_Dialog(object):
     def setupUi(self, Edit_College_Dialog):
         Edit_College_Dialog.setObjectName("Edit_College_Dialog")
         Edit_College_Dialog.resize(541, 200)
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
     Edit_College_Dialog = QtWidgets.QDialog()
-    ui = Ui_Edit_College_Dialog()
+    ui = Ui_EditCollege_Dialog()
     ui.setupUi(Edit_College_Dialog)
     Edit_College_Dialog.show()
     sys.exit(app.exec())
