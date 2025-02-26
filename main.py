@@ -3,7 +3,7 @@ import os
 import config_file
 import csv
 
-from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog
+from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog, QTableWidget , QTableWidgetItem
 from PyQt6 import QtWidgets
 from AddDialog_folder.AddStudent_Dialog import Ui_AddStudent_Dialog
 from AddDialog_folder.AddProgram_Dialog import Ui_AddProgram_Dialog
@@ -16,8 +16,9 @@ def create_csv_file(filename, fieldnames):
         with open(filename, "w", newline="") as csv_file:
             csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
             csv_writer.writeheader()
-            print(f"✅ Created: {filename}")
+            print(f" Created: {filename}")
 
+#UNCOMMENT
 #using function to create the csv files
 create_csv_file(config_file.student_filename, config_file.student_fieldnames)
 create_csv_file(config_file.program_filename, config_file.program_fieldnames)
@@ -160,8 +161,6 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-
-
         #nicknames for the tan;es
         self.student_table = self.ui.tableWidget
         self.program_table = self.ui.tableWidget_2
@@ -191,8 +190,13 @@ class MainWindow(QMainWindow):
         self.ui.addstudent_button.clicked.connect(self.open_add_student_dialog)
         self.ui.addprogram_button.clicked.connect(self.open_add_program_dialog)
         self.ui.addcollege_button.clicked.connect(self.open_add_college_dialog)
-        
 
+        #MAYBE USEFUL FOR UPDATING
+        #Load the CSV files to the table
+        self.load_csv_to_table(self.student_table, config_file.student_filename, "STUDENTS")
+        self.load_csv_to_table(self.program_table, config_file.program_filename, "PROGRAMS")
+        self.load_csv_to_table(self.college_table, config_file.college_filename, "COLLEGES")
+        
     #Function to call [student, program, and college] dialog when the button is clicked
     def open_add_student_dialog(self):
         dialog = AddStudentDialog()
@@ -203,6 +207,36 @@ class MainWindow(QMainWindow):
     def open_add_college_dialog(self):
         dialog = AddCollegeDialog()
         dialog.exec()
+
+    #Function to load the csv files to the tables
+    def load_csv_to_table(self, table_widget, filename, table_type):
+        if not os.path.isfile(filename):
+            print(f" File {filename} does not exist yet.")
+            return
+
+        with open(filename, "r", newline="") as file:
+            csv_reader = csv.reader(file)
+            data = list(csv_reader)
+
+            if not data:
+                print(f" {filename} is empty.")
+                return
+            
+            headers = config_file.header_names.get(table_type, [])
+            fieldnames = [h[0] for h in headers]
+            readable_headers = [h[1] for h in headers]
+
+            table_widget.setHorizontalHeaderLabels(readable_headers + ["Actions"])
+
+            rows = data[1:]  # Skip headers
+            table_widget.setRowCount(len(rows))
+            for row_index, row in enumerate(rows):
+                for col_index, value in enumerate(row):
+                    if col_index < table_widget.columnCount():
+                        table_widget.setItem(row_index, col_index, QTableWidgetItem(value))
+
+            print(f" Loaded {filename} into {table_type} table with custom headers.")
+            
 
 if __name__ == "__main__":
     app = QApplication(sys.argv) 
