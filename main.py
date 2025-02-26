@@ -3,7 +3,7 @@ import os
 import config_file
 import csv
 
-from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog, QTableWidget , QTableWidgetItem
+from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog, QTableWidget , QTableWidgetItem, QPushButton, QWidget, QHBoxLayout
 from PyQt6 import QtWidgets
 from AddDialog_folder.AddStudent_Dialog import Ui_AddStudent_Dialog
 from AddDialog_folder.AddProgram_Dialog import Ui_AddProgram_Dialog
@@ -26,8 +26,8 @@ create_csv_file(config_file.college_filename, config_file.college_fieldnames)
 
 #Opens the Add Student Dialog when button is clicked
 class AddStudentDialog(QDialog):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.ui = Ui_AddStudent_Dialog()
         self.ui.setupUi(self)
 
@@ -70,12 +70,15 @@ class AddStudentDialog(QDialog):
 
         print("Student Added")
 
+        #Reloads the table to show the added student
+        self.parent().load_csv_to_table(self.parent().student_table, csv_filename, "STUDENTS")
+
         self.accept()
         
 #Opens the Add Program Dialog when button is clicked
 class AddProgramDialog(QDialog):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.ui = Ui_AddProgram_Dialog()
         self.ui.setupUi(self)
 
@@ -112,12 +115,15 @@ class AddProgramDialog(QDialog):
 
         print("Program Added")
 
+        #Reloads the table to show the added program
+        self.parent().load_csv_to_table(self.parent().program_table, csv_filename, "PROGRAMS")
+
         self.accept()
 
 #Opens the Add College Dialog when button is clicked
 class AddCollegeDialog(QDialog):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.ui = Ui_AddCollege_Dialog()
         self.ui.setupUi(self)
 
@@ -152,8 +158,10 @@ class AddCollegeDialog(QDialog):
 
         print("College Added")
 
-        self.accept()
+        #Reloads the table to show the added college
+        self.parent().load_csv_to_table(self.parent().college_table, csv_filename, "COLLEGES")
 
+        self.accept()
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -199,13 +207,13 @@ class MainWindow(QMainWindow):
         
     #Function to call [student, program, and college] dialog when the button is clicked
     def open_add_student_dialog(self):
-        dialog = AddStudentDialog()
+        dialog = AddStudentDialog(self)
         dialog.exec()
     def open_add_program_dialog(self):
-        dialog = AddProgramDialog()
+        dialog = AddProgramDialog(self)
         dialog.exec()
     def open_add_college_dialog(self):
-        dialog = AddCollegeDialog()
+        dialog = AddCollegeDialog(self)
         dialog.exec()
 
     #Function to load the csv files to the tables
@@ -222,21 +230,94 @@ class MainWindow(QMainWindow):
                 print(f" {filename} is empty.")
                 return
             
+            #Get headers from config_file.py
             headers = config_file.header_names.get(table_type, [])
-            fieldnames = [h[0] for h in headers]
+            fieldnames = [h[0] for h in headers] #Unused yet
             readable_headers = [h[1] for h in headers]
 
+            #Sets the table headers and adds one for the Actions
             table_widget.setHorizontalHeaderLabels(readable_headers + ["Actions"])
 
-            rows = data[1:]  # Skip headers
+            #Adds data to the table
+            rows = data[1:]
             table_widget.setRowCount(len(rows))
             for row_index, row in enumerate(rows):
                 for col_index, value in enumerate(row):
-                    if col_index < table_widget.columnCount():
+                    if col_index < table_widget.columnCount() - 1: # Ignore last column for buttons
                         table_widget.setItem(row_index, col_index, QTableWidgetItem(value))
 
+                #Adds buttons to the last column
+                action_widget = QWidget()
+                layout = QHBoxLayout(action_widget)
+                layout.setContentsMargins(0, 0, 0, 0)
+
+                #Edit button stylesheet
+                edit_button = QPushButton("Edit")
+                edit_button.clicked.connect(lambda _, ri=row_index: self.edit_row(table_widget, filename, ri))
+                layout.addWidget(edit_button)
+
+                #Delete button stylesheet
+                delete_button = QPushButton("Delete")
+                delete_button.clicked.connect(lambda _, ri=row_index: self.delete_row(table_widget, filename, ri))
+                layout.addWidget(delete_button)
+                
+                #Puts the button to the column
+                table_widget.setCellWidget(row_index, len(readable_headers), action_widget)
+
             print(f" Loaded {filename} into {table_type} table with custom headers.")
-            
+    
+    #Function to edit the row
+    def edit_row(self, table_widget, filename, row_index):
+        print(f"Editing row {row_index} in {filename}")
+        #Add fucntion here to open the Edit DIALOG HERE
+
+    
+    #Function to delete the row
+    def delete_row(self, table_widget, filename, row_index):
+        print(f"Deleting row {row_index} from {filename}")
+
+        with open(filename, "r", newline="") as csv_file:
+            csv_reader = csv.reader(csv_file)
+            data = list(csv_reader)
+
+        #weirdly ako index ga start sa [1] and not [0], therefore permi ga bug kay akong [1] is my header
+        row_index = row_index + 1
+
+        #Debug message
+        #print("📂 Before Deletion:", data)
+
+        if row_index < 1 or row_index >=len(data):
+            print("Invalid row index. Skipping deletion.")
+            return
+        
+        #Debug message
+        #print(f"📂Deleting row: {row_index}, Total CSV rows: {len(data)}")
+
+        del data[row_index]
+
+        #debug message
+        #print("📂 After Deletion:", data)
+
+        with open(filename, "w", newline="") as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerows(data)
+
+        table_widget.removeRow(row_index)
+
+        print("Row deleted successfully and CSV updated.")
+
+        if filename == config_file.student_filename:
+            table_type = "STUDENTS"
+        elif filename == config_file.program_filename:
+            table_type = "PROGRAMS"
+        elif filename == config_file.college_filename:
+            table_type = "COLLEGES"
+        else:
+            print("⚠️ Unknown CSV file. Skipping refresh.")
+            return  
+
+        self.load_csv_to_table(table_widget, filename, table_type)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv) 

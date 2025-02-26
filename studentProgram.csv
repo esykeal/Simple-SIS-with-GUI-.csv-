@@ -1,1 +1,8 @@
 program_code,program_name,college_code
+BSCS,BS in Computer Science,CCS
+BSIT,BS in Information Technology,CCS
+BSCE,BS in Computer Engineering,COE
+BSME,BS in Mechanical Engineering,COE
+BSIE,BS in Industrial Engineering,COE
+BSA,BS in Accountancy,CBA
+BSBA,BS in Business Administration,CBA
