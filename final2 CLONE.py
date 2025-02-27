@@ -205,6 +205,7 @@ class Ui_MainWindow(object):
         self.SearchFilters.addItem("")
         self.SearchFilters.addItem("")
         self.horizontalLayout_5.addWidget(self.SearchFilters)
+
         spacerItem3 = QtWidgets.QSpacerItem(119, 17, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_5.addItem(spacerItem3)
         self.verticalLayout_6.addLayout(self.horizontalLayout_5)
@@ -475,7 +476,6 @@ class Ui_MainWindow(object):
         self.SearchFilters.setItemText(7, _translate("MainWindow", "Program Name"))
         self.SearchFilters.setItemText(8, _translate("MainWindow", "College Code"))
         self.SearchFilters.setItemText(9, _translate("MainWindow", "College Name"))
-
         self.SearchFilters.lineEdit().setPlaceholderText("Search Filters")
         self.SearchFilters.setCurrentIndex(0)  
         self.SearchFilters.setItemData(0, 0, QtCore.Qt.ItemDataRole.UserRole - 1)
