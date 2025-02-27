@@ -301,6 +301,9 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        #Function call for using search function
+        self.ui.search_text.textChanged.connect(self.search_table)
+
         #nicknames for the tan;es
         self.student_table = self.ui.tableWidget
         self.program_table = self.ui.tableWidget_2
@@ -477,6 +480,39 @@ class MainWindow(QMainWindow):
 
         self.load_csv_to_table(table_widget, filename, table_type)
 
+    #Function for searching
+    def search_table(self):
+        search_text = self.ui.search_text.text().strip().lower()
+        selected_filter = self.ui.SearchFilters.currentIndex()
+
+        print(f"🔎 Search input:'{search_text}'")
+        print(f"🔎 Selected filter:'{selected_filter}'")
+
+        current_index = self.ui.stackedWidget.currentIndex()
+
+        if current_index == 0:
+            table_widget = self.student_table
+            selected_filter = selected_filter - 1
+        elif current_index == 1:
+            table_widget = self.program_table
+            selected_filter = selected_filter - 6
+        elif current_index == 2:
+            table_widget = self.college_table
+            selected_filter = selected_filter - 8
+        else:
+            print("⚠️ No valid table selected!")
+            return
+    
+        for row in range(table_widget.rowCount()):
+            item = table_widget.item(row, selected_filter)
+            
+            if not search_text:
+                table_widget.setRowHidden(row, False)
+            else:
+                if item and search_text in item.text().strip().lower():
+                    table_widget.setRowHidden(row, False)
+                else:
+                    table_widget.setRowHidden(row, True)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv) 
