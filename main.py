@@ -4,7 +4,7 @@ import config_file
 import csv
 
 from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog, QTableWidget , QTableWidgetItem, QPushButton, QWidget, QHBoxLayout
-from PyQt6 import QtWidgets
+from PyQt6 import QtWidgets, QtCore
 from AddDialog_folder.AddStudent_Dialog import Ui_AddStudent_Dialog
 from AddDialog_folder.AddProgram_Dialog import Ui_AddProgram_Dialog
 from AddDialog_folder.AddCollege_Dialog import Ui_AddCollege_Dialog
@@ -301,6 +301,11 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        #Aron dli ma click
+        self.ui.tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.ui.tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
+        #self.ui.tableWidget.setEnabled(False)
+
         #Function call for using search function
         self.ui.search_text.textChanged.connect(self.search_table)
 
@@ -339,6 +344,12 @@ class MainWindow(QMainWindow):
         self.load_csv_to_table(self.student_table, config_file.student_filename, "STUDENTS")
         self.load_csv_to_table(self.program_table, config_file.program_filename, "PROGRAMS")
         self.load_csv_to_table(self.college_table, config_file.college_filename, "COLLEGES")
+
+        #SORTING
+        #FIXME:
+        self.ui.comboBox.currentIndexChanged.connect(self.sort_table)
+        self.ui.comboBox_2.currentIndexChanged.connect(self.sort_table)
+        self.ui.comboBox_3.currentIndexChanged.connect(self.sort_table)
         
     #Function to call [student, program, and college] dialog when the button is clicked
     def open_add_student_dialog(self):
@@ -513,6 +524,73 @@ class MainWindow(QMainWindow):
                     table_widget.setRowHidden(row, False)
                 else:
                     table_widget.setRowHidden(row, True)
+
+    #FIXME:
+    def sort_table(self):
+        current_index = self.ui.stackedWidget.currentIndex()
+
+        if current_index == 0:
+            table_widget = self.student_table
+            filename = config_file.student_filename
+            table_type = "STUDENTS"
+            sort_combo = self.ui.comboBox
+            sort_mapping = {
+                1: (1, QtCore.Qt.SortOrder.AscendingOrder),  # First Name (A-Z)
+                2: (1, QtCore.Qt.SortOrder.DescendingOrder),  # First Name (Z-A)
+                3: (2, QtCore.Qt.SortOrder.AscendingOrder),  # Last Name (A-Z)
+                4: (2, QtCore.Qt.SortOrder.DescendingOrder),  # Last Name (Z-A)
+                5: (0, QtCore.Qt.SortOrder.AscendingOrder),  # Student ID (Ascending)
+                6: (0, QtCore.Qt.SortOrder.DescendingOrder),  # Student ID (Descending)
+                7: (3, QtCore.Qt.SortOrder.AscendingOrder),  # Year Level (1-4)
+                8: (3, QtCore.Qt.SortOrder.DescendingOrder),  # Year Level (4-1)
+                9: (5, QtCore.Qt.SortOrder.AscendingOrder),  # Program Code (A-Z)
+                10: (4, QtCore.Qt.SortOrder.AscendingOrder)  # Gender
+            }
+
+        elif current_index == 1:
+            table_widget = self.program_table
+            filename = config_file.program_filename
+            table_type = "PROGRAMS"
+            sort_combo = self.ui.comboBox_2
+            sort_mapping = {
+                1: (0, QtCore.Qt.SortOrder.AscendingOrder), #Program Code (A-Z)
+                2: (0, QtCore.Qt.SortOrder.DescendingOrder), #Z-A
+                3: (1, QtCore.Qt.SortOrder.AscendingOrder),  #Program Name (A-Z)
+                4: (1, QtCore.Qt.SortOrder.DescendingOrder), #Z-A
+                5: (2, QtCore.Qt.SortOrder.AscendingOrder), #College Code (A-Z)
+                6: (2, QtCore.Qt.SortOrder.DescendingOrder) #Z-A
+            }
+        elif current_index == 2:
+            table_widget = self.college_table
+            filename = config_file.college_filename
+            table_type = "COLLEGES"
+            sort_combo = self.ui.comboBox_3
+            sort_mapping = {
+                1: (0, QtCore.Qt.SortOrder.AscendingOrder), #College Code (A-Z)
+                2: (0, QtCore.Qt.SortOrder.DescendingOrder), #Z-A
+                3: (1, QtCore.Qt.SortOrder.AscendingOrder),  #College Name (A-Z)
+                4: (1, QtCore.Qt.SortOrder.DescendingOrder), #Z-A
+            }
+        else:
+            print("⚠️ No active table found.")
+            return
+
+        selected_sort_index = sort_combo.currentIndex()
+
+        if selected_sort_index not in sort_mapping:
+            print(f"🔄 Restoring {table_type} Table to Original Order from CSV...")
+            self.load_csv_to_table(table_widget, filename, table_type)
+            return
+        
+        column_index, sort_order = sort_mapping[selected_sort_index]
+
+        print(f"🔄 Sorting {table_type} Table by Column Index: {selected_sort_index}")
+
+        table_widget.sortItems(column_index, sort_order)
+        
+        # Perform sorting in Ascending Order
+        #table_widget.sortItems(selected_sort_index, QtCore.Qt.SortOrder.AscendingOrder)
+        #print(f"✅ {table_type} Table sorted by Column {selected_sort_index} in Ascending Order.")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv) 
