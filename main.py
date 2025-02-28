@@ -450,10 +450,10 @@ class EditProgramDialog(QDialog):
             self.reject()  # No changes made, close dialog without saving
             return
 
-        if new_program_code != self.old_program_code and not programCode_existence(config_file.program_filename, new_program_code):
+        if new_program_code != self.old_program_code and programCode_existence(config_file.program_filename, new_program_code):
             QMessageBox.warning(self, "Error", "Program code already exists!")
             return
-        if new_program_name != self.old_program_name and not programName_existence(config_file.program_filename, new_program_name):
+        if new_program_name != self.old_program_name and programName_existence(config_file.program_filename, new_program_name):
             QMessageBox.warning(self, "Error", "Program name already exists!")
             return
         if any(field == "" for field in [new_program_code, new_program_name, new_college_code]):
