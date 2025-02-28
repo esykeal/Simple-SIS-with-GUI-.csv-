@@ -258,11 +258,11 @@ class EditStudentDialog(QDialog):
             return
 
         if not programCode_existence(config_file.program_filename, self.ui.Program_Code_input.text()):
-            QMessageBox.warning(self, "Error", "Program code doesn't exists! Enter a valid program code")
+            QMessageBox.warning(self, "Error", "Program Code doesn't exists! Enter a valid program code")
             return
 
         if (
-            self.ui.ID_Number_input.text() != self.original_row[0] and
+             self.ui.ID_Number_input.text() != self.original_row[0] and
             idNumber_existence(config_file.student_filename, self.ui.ID_Number_input.text())
             ):
             QMessageBox.warning(self, "Error", "ID Number already exists")
@@ -442,7 +442,6 @@ class EditProgramDialog(QDialog):
 
     def save_changes(self):
         #The input will become the new data
-
         new_program_code = self.ui.ProgramCode_input.text().strip()
         new_program_name = self.ui.ProgramName_input.text().strip()
         new_college_code = self.ui.CollegeCode_input.text().strip()
@@ -451,13 +450,12 @@ class EditProgramDialog(QDialog):
             self.reject()  # No changes made, close dialog without saving
             return
 
-        if new_program_code != self.old_program_code and programCode_existence(config_file.program_filename, new_program_code):
+        if new_program_code != self.old_program_code and not programCode_existence(config_file.program_filename, new_program_code):
             QMessageBox.warning(self, "Error", "Program code already exists!")
             return
-        if new_program_name != self.old_program_name and programName_existence(config_file.program_filename, new_program_name):
+        if new_program_name != self.old_program_name and not programName_existence(config_file.program_filename, new_program_name):
             QMessageBox.warning(self, "Error", "Program name already exists!")
             return
-        
         if any(field == "" for field in [new_program_code, new_program_name, new_college_code]):
             QMessageBox.warning(self, "Error", "Fields can't be empty")
             return
