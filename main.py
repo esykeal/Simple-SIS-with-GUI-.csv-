@@ -19,10 +19,9 @@ from EditDialog_folder.EditStudent_Dialog import Ui_EditStudent_Dialog
 from EditDialog_folder.EditProgram_Dialog import Ui_EditProgram_Dialog
 from EditDialog_folder.EditCollege_Dialog import Ui_EditCollege_Dialog
 
-from final2 import Ui_MainWindow
+from deleteItemConfirmation import Ui_DeleteConfirmation
 
-#TODO: What happens if you remove college?
-#TODO: What happends if you remove college?
+from final2 import Ui_MainWindow
 
 #Function to create csv file
 def create_csv_file(filename, fieldnames):
@@ -528,6 +527,17 @@ class EditProgramDialog(QDialog):
 
         print(f"✅ Successfully updated {old_code} → {new_code} in studentInfo.csv")
 
+#Opens a delete confirmation dialog when delete button is clicked
+class DeleteItemConfirmation(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.ui = Ui_DeleteConfirmation()
+        self.ui.setupUi(self)
+
+        self.ui.Confirm.clicked.connect(self.accept)
+        self.ui.Cancel.clicked.connect(self.reject)
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -636,7 +646,7 @@ class MainWindow(QMainWindow):
 
                 #Delete button stylesheet
                 delete_button = QPushButton("Delete")
-                delete_button.clicked.connect(lambda _, ri=row_index: self.delete_row(table_widget, filename, ri))
+                delete_button.clicked.connect(lambda _, ri=row_index: self.confirm_delete_Row(table_widget, filename, ri))
                 layout.addWidget(delete_button)
                 
                 #Puts the button to the column
@@ -723,6 +733,15 @@ class MainWindow(QMainWindow):
             return  
 
         self.load_csv_to_table(table_widget, filename, table_type)
+
+    def confirm_delete_Row(self,table_widget, filename, row_index):
+        dialog = DeleteItemConfirmation()
+        result = dialog.exec()
+
+        if result == QDialog.DialogCode.Accepted:
+            self.delete_row(table_widget, filename, row_index)
+        else:
+            print("Cancelled")
 
     #Function for searching
     def search_table(self):
