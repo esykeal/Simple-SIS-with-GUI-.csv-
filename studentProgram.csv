@@ -1,38 +1,12 @@
 program_code,program_name,college_code
-BSCS,BS in Computer Science,CIT
-BSIT,BS in Information Technology,CIT
-BSIS,BS in Information Systems,CIT
-BSCPE,BS in Computer Engineering,COE
+BSCS,BS in Computer Science,CCS
+BSCA,BS in Computer Applications,CCS
+BSIT,BS in Information Technology,CCS
+BSIS,BS in Information System,CCS
+BSCE,BS in Civil Engineering,COE
 BSEE,BS in Electrical Engineering,COE
 BSME,BS in Mechanical Engineering,COE
-BSIE,BS in Industrial Engineering,COE
-BSA,BS in Accountancy,CBA
-BSBA,BS in Business Administration,CBA
-BSECON,BS in Economics,CBA
-BAPolSci,BA in Political Science,CASS
-BAENG,BA in English,CASS
-BAPSY,BA in Psychology,CASS
-BASOC,BA in Sociology,CASS
-BSED,Bachelor of Secondary Education,COED
-BEED,Bachelor of Elementary Education,COED
-BSN,BS in Nursing,CON
-BSBIO,BS in Biology,COS
-BSMATH,BS in Mathematics,COS
-BSA,BS in Architecture,CAFA
-BFA,BS in Fine Arts,CAFA
-BSPH,BS in Public Health,CHS
-BSET,BS in Engineering Technology,COT
-BSEM,BS in Electronics Management,COT
-BSF,BS in Forestry,CAFES
-BSCJ,BS in Criminology,CCJ
-BFS,BS in Forensic Science,CCJ
-BSSE,BS in Sports and Exercise Science,CSM
-BSFAS,BS in Fisheries and Aquatic Sciences,CFA
-BSHRM,BS in Hospitality and Restaurant Management,CBA
-BSMT,BS in Marine Transportation,CMA
-BSMarE,BS in Marine Engineering,CMA
-BSAS,BS in Applied Sciences,CAS
-MD,Doctor of Medicine,CM
-BAComm,BA in Communication,CAL
-BALit,BA in Literature,CAL
-
+BA-ENG,BA in English,CASS
+BS-PSY,BS in Psychology,CASS
+BA-FIL,BA in Filipino,CASS
+BA-HIST,BA in History,CASS

@@ -3,7 +3,12 @@ import os
 import config_file
 import csv
 
-from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog, QTableWidget , QTableWidgetItem, QPushButton, QWidget, QHBoxLayout
+from existence_checker import programName_existence
+from existence_checker import programCode_existence
+from existence_checker import collegeName_existence
+from existence_checker import collegeCode_existence
+
+from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog, QTableWidget , QTableWidgetItem, QPushButton, QWidget, QHBoxLayout, QMessageBox
 from PyQt6 import QtWidgets, QtCore
 from AddDialog_folder.AddStudent_Dialog import Ui_AddStudent_Dialog
 from AddDialog_folder.AddProgram_Dialog import Ui_AddProgram_Dialog
@@ -54,8 +59,10 @@ class AddStudentDialog(QDialog):
         gender = self.ui.Gender_input.text()
         program_code = self.ui.Program_Code_input.text()
 
-        csv_filename = config_file.student_filename 
+        if not programCode_existence(config_file.program_filename, program_code):
+            QMessageBox.warning("Error", "Program Code doesn't exists! Enter a valid program code")
 
+        csv_filename = config_file.student_filename 
         file_exists = os.path.isfile(csv_filename)
 
         with open(csv_filename, "a", newline="") as csv_file:
@@ -102,8 +109,12 @@ class AddProgramDialog(QDialog):
         program_name = self.ui.ProgramName_input.text()
         college_code = self.ui.CollegeCode_input.text()
 
-        csv_filename = config_file.program_filename
+        #TODO: Add a condition where if a college_code doesnt exist in the csv file, then present an error message
+        if not collegeCode_existence(config_file.college_filename, college_code):
+            QMessageBox.warning(self, "Error", "College doesn't exist! Please enter a valid college code.")
+            return
 
+        csv_filename = config_file.program_filename
         file_exists = os.path.isfile(csv_filename)
 
         with open(csv_filename, "a", newline="") as csv_file:
@@ -168,6 +179,12 @@ class AddCollegeDialog(QDialog):
 
         self.accept()
 
+
+#TODO: Add Student relies on program code from program csv
+#TODO: What happens if you remove college?
+#TODO: Removing program
+
+
 class EditStudentDialog(QDialog):
     def __init__(self, parent, row_data, row_index):
         super().__init__(parent)
@@ -215,6 +232,115 @@ class EditStudentDialog(QDialog):
 
         self.accept()
 
+#TODO: Editing EditCollegeDialog Dialog
+#Edited version for Program.csv to rely on College.csv
+class EditCollegeDialog(QDialog):
+    def __init__(self, parent, row_data, row_index):
+        super().__init__(parent)
+        self.ui = Ui_EditCollege_Dialog()
+        self.ui.setupUi(self)
+        self.row_index = row_index
+        self.parent = parent
+        self.old_college_code = row_data[0]  # Store old college code
+
+        print("🪳 Old college code: " + row_data[0])
+
+        #Filling data input
+        self.ui.CollegeCode_input.setText(row_data[0]) 
+        self.ui.CollegeName_input.setText(row_data[1])
+
+        #Calling functions when button is pressed
+        self.ui.Save_button.clicked.connect(self.save_changes)
+        self.ui.Cancel_button.clicked.connect(self.reject)
+
+    def save_changes(self):
+        #The input will become the new data
+        new_college_code = self.ui.CollegeCode_input.text().strip()
+        new_college_name = self.ui.CollegeName_input.text().strip()
+
+        #If blank it will become error
+        if not new_college_code:
+            QMessageBox.warning(self, "Error", "College code cannot be empty!")
+            return
+
+        filename = config_file.college_filename
+
+        # Read the existing data
+        with open(filename, "r", newline="") as csv_file:
+            csv_reader = csv.reader(csv_file)
+            data = list(csv_reader)
+
+        # Update the row in `college.csv`
+        if 1 <= self.row_index < len(data):
+            data[self.row_index] = [new_college_code, new_college_name]
+
+        with open(filename, "w", newline="") as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerows(data)
+
+        # Check if college code was changed and update `program.csv`
+        if new_college_code != self.old_college_code:
+            self.update_program_college_codes(self.old_college_code, new_college_code)
+            self.parent.load_csv_to_table(self.parent.program_table, config_file.program_filename, "PROGRAMS")
+
+        print("✅ College data updated successfully.")
+
+        self.parent.load_csv_to_table(self.parent.program_table, config_file.program_filename, "PROGRAMS")
+        self.parent.load_csv_to_table(self.parent.college_table, config_file.college_filename, "COLLEGES")
+        
+        self.accept()
+
+    def update_program_college_codes(self, old_code, new_code):
+        """Update the college code in program.csv when a college code is changed."""
+        program_filename = config_file.program_filename
+        updated_data = []
+
+        with open(program_filename, "r", newline="") as file:
+            csv_reader = csv.reader(file)
+            data = list(csv_reader)
+
+        # Ensure data is not empty
+        if not data:
+            print("⚠️ Warning: program.csv is empty or missing headers.")
+            return
+
+        # Check if the file has a header
+        header = data[0] if len(data) > 0 else None
+        rows = data[1:]  if len(data) > 1 else []# Exclude header
+
+        print(f"📄 Loaded {len(rows)} rows from program.csv")
+
+        print(f"Header: {header}")
+        print(f"Row: {rows}")
+
+        for row in rows:
+            if len(row) < 3:  # Ensure the row has at least 3 columns
+                print(f"⚠ Skipping invalid row: {row}")
+                continue  # Skip this row to prevent IndexError
+
+            original_code = row[2].strip()
+            print(f"🔎 Checking row: {row}")
+
+            if original_code == old_code:  # Check the correct column
+                print(f"📝 Updating: {original_code} → {new_code}")
+                row[2] = new_code
+                
+            updated_data.append(row)
+
+        if not updated_data:
+            print("❌ No updates made to program.csv")
+            return
+        
+        # Write back to program.csv
+        with open(program_filename, "w", newline="") as file:
+            csv_writer = csv.writer(file)
+            if header:
+                csv_writer.writerow(header)  # Keep the header row
+
+            csv_writer.writerows(updated_data)
+
+        print(f"✅ Successfully updated {old_code} → {new_code} in program.csv")
+
 class EditProgramDialog(QDialog):
     def __init__(self, parent, row_data, row_index):
         super().__init__(parent)
@@ -255,45 +381,6 @@ class EditProgramDialog(QDialog):
         self.parent.load_csv_to_table(self.parent.program_table, filename, "PROGRAMS")
 
         self.accept()        
-
-class EditCollegeDialog(QDialog):
-        def __init__(self, parent, row_data, row_index):
-            super().__init__(parent)
-            self.ui = Ui_EditCollege_Dialog()
-            self.ui.setupUi(self)
-            self.row_index = row_index
-            self.parent = parent
-
-            self.ui.CollegeCode_input.setText(row_data[0])
-            self.ui.CollegeName_input.setText(row_data[1])
-
-            self.ui.Save_button.clicked.connect(self.save_changes)
-            self.ui.Cancel_button.clicked.connect(self.reject)
-
-        def save_changes(self):
-            updated_row = [
-                self.ui.CollegeCode_input.text(),
-                self.ui.CollegeName_input.text()
-            ] 
-
-            filename = config_file.college_filename
-
-            with open(filename, "r", newline="") as csv_file:
-                csv_reader = csv.reader(csv_file)
-                data = list(csv_reader)
-
-            if 1 <= self.row_index < len(data):
-                data[self.row_index] = updated_row
-
-            with open(filename, "w", newline="") as file:
-                csv_writer = csv.writer(file)
-                csv_writer.writerows(data)
-
-            print("✅ College data updated succesfully.")
-
-            self.parent.load_csv_to_table(self.parent.student_table, filename, "COLLEGES")
-
-            self.accept()
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -346,7 +433,6 @@ class MainWindow(QMainWindow):
         self.load_csv_to_table(self.college_table, config_file.college_filename, "COLLEGES")
 
         #SORTING
-        #FIXME:
         self.ui.comboBox.currentIndexChanged.connect(self.sort_table)
         self.ui.comboBox_2.currentIndexChanged.connect(self.sort_table)
         self.ui.comboBox_3.currentIndexChanged.connect(self.sort_table)
@@ -525,7 +611,7 @@ class MainWindow(QMainWindow):
                 else:
                     table_widget.setRowHidden(row, True)
 
-    #FIXME:
+    #Function for sorting the tables
     def sort_table(self):
         current_index = self.ui.stackedWidget.currentIndex()
 
