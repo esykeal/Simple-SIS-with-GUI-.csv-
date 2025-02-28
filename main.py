@@ -98,7 +98,7 @@ class AddStudentDialog(QDialog):
 
         #Reloads the table to show the added student
         self.parent().load_csv_to_table(self.parent().student_table, csv_filename, "STUDENTS")
-
+        self.parent().sort_table()
         self.accept()
 
 #DONE: DONE
@@ -162,7 +162,7 @@ class AddProgramDialog(QDialog):
 
         #Reloads the table to show the added program
         self.parent().load_csv_to_table(self.parent().program_table, csv_filename, "PROGRAMS")
-
+        self.parent().sort_table()
         self.accept()
 
 #DONE:DONE
@@ -219,7 +219,7 @@ class AddCollegeDialog(QDialog):
 
         #Reloads the table to show the added college
         self.parent().load_csv_to_table(self.parent().college_table, csv_filename, "COLLEGES")
-
+        self.parent().sort_table()
         self.accept()
 
 #TODO:
@@ -315,15 +315,19 @@ class EditCollegeDialog(QDialog):
         new_college_code = self.ui.CollegeCode_input.text().strip()
         new_college_name = self.ui.CollegeName_input.text().strip()
 
-        if new_college_code == self.old_college_code and new_college_name == self.old_college_name:
+        if new_college_code == self.old_college_code:
+            pass
+        else:
+            if collegeCode_existence(config_file.college_filename, new_college_code):
+                QMessageBox.warning(self, "Error", "College code already exists!")
+                return
+            
+        if new_college_name == self.old_college_name:
             pass
         else:
             if collegeName_existence(config_file.college_filename, new_college_name):
                 QMessageBox.warning(self, "Error", "College already exists!")
                 return
-            if collegeCode_existence(config_file.college_filename, new_college_code):
-                QMessageBox.warning(self, "Error", "College code already exists!")
-                return  
 
         if not new_college_code:
             QMessageBox.warning(self, "Error", "College code cannot be empty!")
@@ -419,6 +423,8 @@ class EditProgramDialog(QDialog):
         self.row_index = row_index
         self.parent = parent
         self.old_program_code = row_data[0]
+        self.old_program_name = row_data[1]
+        self.old_college_code = row_data[2]
 
         #Fill data input
         self.ui.ProgramCode_input.setText(row_data[0])
@@ -434,34 +440,25 @@ class EditProgramDialog(QDialog):
         new_program_code = self.ui.ProgramCode_input.text().strip()
         new_program_name = self.ui.ProgramName_input.text().strip()
         new_college_code = self.ui.CollegeCode_input.text().strip()
-
-        if new_program_name == self.old_program_code and new_program_code == self.old_program_code and new_college_code == self.old_program_code:
-            pass
-        else:
-            if programCode_existence(config_file.program_filename, new_program_code):
-                QMessageBox.warning(self, "Error", "Program code already exist")
-                return
-            if programName_existence(config_file.college_filename, new_college_code):
-                QMessageBox.warning(self, "Error", "Program name already exist")
-                return
-            if collegeCode_existence(config_file.college_filename, new_college_code):
-                QMessageBox.warning(self, "Error", "College code already exist")
-                return
-
-        if not new_program_name:
-            QMessageBox.warning(self, "Error", "Fields can't be empty")
+        
+        if [new_program_code, new_program_name, new_college_code] == [self.old_program_code, self.old_program_name, self.old_college_code]:
+            self.reject()  # No changes made, close dialog without saving
             return
 
-        if not new_program_code:
+        if new_program_code != self.old_program_code and programCode_existence(config_file.program_filename, new_program_code):
+            QMessageBox.warning(self, "Error", "Program code already exists!")
+            return
+        if new_program_name != self.old_program_name and programName_existence(config_file.program_filename, new_program_name):
+            QMessageBox.warning(self, "Error", "Program name already exists!")
+            return
+        
+        if any(field == "" for field in [new_program_code, new_program_name, new_college_code]):
             QMessageBox.warning(self, "Error", "Fields can't be empty")
             return
-
-        if not new_college_code:
-            QMessageBox.warning(self, "Error", "Fields can't be empty")
-            return
-
+        
         if not collegeCode_existence(config_file.college_filename, new_college_code):
             QMessageBox.warning(self, "Error", "College code doesn't exist")
+            return
 
         filename = config_file.program_filename
 
@@ -823,10 +820,6 @@ class MainWindow(QMainWindow):
         print(f"🔄 Sorting {table_type} Table by Column Index: {selected_sort_index}")
 
         table_widget.sortItems(column_index, sort_order)
-        
-        # Perform sorting in Ascending Order
-        #table_widget.sortItems(selected_sort_index, QtCore.Qt.SortOrder.AscendingOrder)
-        #print(f"✅ {table_type} Table sorted by Column {selected_sort_index} in Ascending Order.")
 
     def update_programs_after_college_delete(self, deleted_college_code):
         program_filename = config_file.program_filename
