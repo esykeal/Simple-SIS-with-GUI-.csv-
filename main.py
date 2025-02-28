@@ -257,7 +257,14 @@ class EditStudentDialog(QDialog):
             self.reject()  # Close dialog without saving
             return
 
-        if idNumber_existence(config_file.student_filename, self.ui.ID_Number_input.text()):
+        if not programCode_existence(config_file.program_filename, self.ui.Program_Code_input.text()):
+            QMessageBox.warning(self, "Error", "Program code doesn't exists! Enter a valid program code")
+            return
+
+        if (
+            self.ui.ID_Number_input.text() != self.original_row[0] and
+            idNumber_existence(config_file.student_filename, self.ui.ID_Number_input.text())
+            ):
             QMessageBox.warning(self, "Error", "ID Number already exists")
             return
 
