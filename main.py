@@ -7,6 +7,7 @@ from existence_checker import programName_existence
 from existence_checker import programCode_existence
 from existence_checker import collegeName_existence
 from existence_checker import collegeCode_existence
+from existence_checker import idNumber_existence
 
 from PyQt6.QtWidgets import QMainWindow, QApplication, QDialog, QTableWidget , QTableWidgetItem, QPushButton, QWidget, QHBoxLayout, QMessageBox
 from PyQt6 import QtWidgets, QtCore
@@ -20,6 +21,9 @@ from EditDialog_folder.EditCollege_Dialog import Ui_EditCollege_Dialog
 
 from final2 import Ui_MainWindow
 
+#TODO: What happens if you remove college?
+#TODO: What happends if you remove college?
+
 #Function to create csv file
 def create_csv_file(filename, fieldnames):
     if not os.path.isfile(filename):
@@ -28,12 +32,13 @@ def create_csv_file(filename, fieldnames):
             csv_writer.writeheader()
             print(f" Created: {filename}")
 
-#UNCOMMENT
 #using function to create the csv files
 create_csv_file(config_file.student_filename, config_file.student_fieldnames)
 create_csv_file(config_file.program_filename, config_file.program_fieldnames)
 create_csv_file(config_file.college_filename, config_file.college_fieldnames)
 
+
+#DONE: DONE
 #Opens the Add Student Dialog when button is clicked
 class AddStudentDialog(QDialog):
     def __init__(self, parent=None):
@@ -60,8 +65,17 @@ class AddStudentDialog(QDialog):
         program_code = self.ui.Program_Code_input.text()
 
         if not programCode_existence(config_file.program_filename, program_code):
-            QMessageBox.warning("Error", "Program Code doesn't exists! Enter a valid program code")
+            QMessageBox.warning(self, "Error", "Program Code doesn't exists! Enter a valid program code")
+            return
 
+        if idNumber_existence(config_file.student_filename, id_number):
+            QMessageBox.warning(self, "Error", "ID Number already exists")
+            return
+
+        if not all([id_number, first_name, last_name, year_level, gender, program_code]):
+            QMessageBox.warning(self, "Input Error", "All fields must be filled out.")
+            return
+                
         csv_filename = config_file.student_filename 
         file_exists = os.path.isfile(csv_filename)
 
@@ -86,7 +100,8 @@ class AddStudentDialog(QDialog):
         self.parent().load_csv_to_table(self.parent().student_table, csv_filename, "STUDENTS")
 
         self.accept()
-        
+
+#DONE: DONE
 #Opens the Add Program Dialog when button is clicked
 class AddProgramDialog(QDialog):
     def __init__(self, parent=None):
@@ -109,11 +124,25 @@ class AddProgramDialog(QDialog):
         program_name = self.ui.ProgramName_input.text()
         college_code = self.ui.CollegeCode_input.text()
 
-        #TODO: Add a condition where if a college_code doesnt exist in the csv file, then present an error message
+        if programName_existence(config_file.program_filename, program_name):
+            QMessageBox.warning(self, "Error", "Program Name already exists!")
+            return
+        
+        if programCode_existence(config_file.program_filename, program_code):
+            QMessageBox.warning(self, "Error", "Program Code already exists!")
+            return
+
         if not collegeCode_existence(config_file.college_filename, college_code):
             QMessageBox.warning(self, "Error", "College doesn't exist! Please enter a valid college code.")
             return
 
+        if not program_code:
+            QMessageBox.warning(self,"Error","Field can't be empty")
+        if not program_name:
+            QMessageBox.warning(self,"Error","Field can't be empty")
+        if not college_code:
+            QMessageBox.warning(self,"Error","Field can't be empty") 
+        
         csv_filename = config_file.program_filename
         file_exists = os.path.isfile(csv_filename)
 
@@ -136,6 +165,7 @@ class AddProgramDialog(QDialog):
 
         self.accept()
 
+#DONE:DONE
 #Opens the Add College Dialog when button is clicked
 class AddCollegeDialog(QDialog):
     def __init__(self, parent=None):
@@ -156,6 +186,19 @@ class AddCollegeDialog(QDialog):
     def save_college(self):
         college_code = self.ui.CollegeCode_input.text()
         college_name = self.ui.CollegeName_input.text()
+
+        if collegeCode_existence(config_file.college_filename, college_code):
+            QMessageBox.warning(self, "Error", "College code already exists, change it")
+            return
+        
+        if collegeName_existence(config_file.college_filename, college_name):
+            QMessageBox.warning(self, "Error", "College name already exists, change it")
+            return
+
+        if not college_code:
+            QMessageBox.warning(self,"Error","Field can't be empty")
+        if not college_name:
+            QMessageBox.warning(self,"Error","Field can't be empty")
 
         csv_filename = config_file.college_filename
 
@@ -179,12 +222,8 @@ class AddCollegeDialog(QDialog):
 
         self.accept()
 
-
-#TODO: Add Student relies on program code from program csv
-#TODO: What happens if you remove college?
-#TODO: Removing program
-
-
+#TODO:
+#Opens a Edit Dialog when edit button is clicked
 class EditStudentDialog(QDialog):
     def __init__(self, parent, row_data, row_index):
         super().__init__(parent)
@@ -192,6 +231,8 @@ class EditStudentDialog(QDialog):
         self.ui.setupUi(self)
         self.row_index = row_index
         self.parent = parent
+
+        self.original_row = row_data.copy()
 
         self.ui.ID_Number_input.setText(row_data[0])
         self.ui.First_Name_input.setText(row_data[1])
@@ -213,6 +254,23 @@ class EditStudentDialog(QDialog):
             self.ui.Program_Code_input.text()
         ]
 
+        if updated_row == self.original_row:
+            self.reject()  # Close dialog without saving
+            return
+
+        if idNumber_existence(config_file.student_filename, self.ui.ID_Number_input.text()):
+            QMessageBox.warning(self, "Error", "ID Number already exists")
+            return
+
+        if updated_row != self.original_row:
+            if any(field == "" for field in updated_row):
+                QMessageBox.warning(self, "Input Error", "Fields can't be empty")
+                return
+        else:
+            self.reject()  # Close dialog without saving
+            return
+
+
         filename = config_file.student_filename
 
         with open(filename, "r", newline="") as csv_file:
@@ -232,8 +290,8 @@ class EditStudentDialog(QDialog):
 
         self.accept()
 
-#TODO: Editing EditCollegeDialog Dialog
-#Edited version for Program.csv to rely on College.csv
+#DONE:
+#Opens a Edit Dialog when edit button is clicked
 class EditCollegeDialog(QDialog):
     def __init__(self, parent, row_data, row_index):
         super().__init__(parent)
@@ -241,9 +299,8 @@ class EditCollegeDialog(QDialog):
         self.ui.setupUi(self)
         self.row_index = row_index
         self.parent = parent
-        self.old_college_code = row_data[0]  # Store old college code
-
-        print("🪳 Old college code: " + row_data[0])
+        self.old_college_code = row_data[0]
+        self.old_college_name = row_data[1]
 
         #Filling data input
         self.ui.CollegeCode_input.setText(row_data[0]) 
@@ -258,11 +315,24 @@ class EditCollegeDialog(QDialog):
         new_college_code = self.ui.CollegeCode_input.text().strip()
         new_college_name = self.ui.CollegeName_input.text().strip()
 
-        #If blank it will become error
+        if new_college_code == self.old_college_code and new_college_name == self.old_college_name:
+            pass
+        else:
+            if collegeName_existence(config_file.college_filename, new_college_name):
+                QMessageBox.warning(self, "Error", "College already exists!")
+                return
+            if collegeCode_existence(config_file.college_filename, new_college_code):
+                QMessageBox.warning(self, "Error", "College code already exists!")
+                return  
+
         if not new_college_code:
             QMessageBox.warning(self, "Error", "College code cannot be empty!")
             return
 
+        if not new_college_name:
+            QMessageBox.warning(self, "Error", "College cannot be empty!")
+            return
+        
         filename = config_file.college_filename
 
         # Read the existing data
@@ -310,8 +380,6 @@ class EditCollegeDialog(QDialog):
 
         print(f"📄 Loaded {len(rows)} rows from program.csv")
 
-        print(f"Header: {header}")
-        print(f"Row: {rows}")
 
         for row in rows:
             if len(row) < 3:  # Ensure the row has at least 3 columns
@@ -341,6 +409,8 @@ class EditCollegeDialog(QDialog):
 
         print(f"✅ Successfully updated {old_code} → {new_code} in program.csv")
 
+#DONE:
+#Opens a Edit Dialog when edit button is clicked
 class EditProgramDialog(QDialog):
     def __init__(self, parent, row_data, row_index):
         super().__init__(parent)
@@ -348,7 +418,9 @@ class EditProgramDialog(QDialog):
         self.ui.setupUi(self)
         self.row_index = row_index
         self.parent = parent
+        self.old_program_code = row_data[0]
 
+        #Fill data input
         self.ui.ProgramCode_input.setText(row_data[0])
         self.ui.ProgramName_input.setText(row_data[1])
         self.ui.CollegeCode_input.setText(row_data[2])
@@ -357,11 +429,39 @@ class EditProgramDialog(QDialog):
         self.ui.Cancel_button.clicked.connect(self.reject)
 
     def save_changes(self):
-        updated_row = [
-            self.ui.ProgramCode_input.text(),
-            self.ui.ProgramName_input.text(),
-            self.ui.CollegeCode_input.text()
-        ]
+        #The input will become the new data
+
+        new_program_code = self.ui.ProgramCode_input.text().strip()
+        new_program_name = self.ui.ProgramName_input.text().strip()
+        new_college_code = self.ui.CollegeCode_input.text().strip()
+
+        if new_program_name == self.old_program_code and new_program_code == self.old_program_code and new_college_code == self.old_program_code:
+            pass
+        else:
+            if programCode_existence(config_file.program_filename, new_program_code):
+                QMessageBox.warning(self, "Error", "Program code already exist")
+                return
+            if programName_existence(config_file.college_filename, new_college_code):
+                QMessageBox.warning(self, "Error", "Program name already exist")
+                return
+            if collegeCode_existence(config_file.college_filename, new_college_code):
+                QMessageBox.warning(self, "Error", "College code already exist")
+                return
+
+        if not new_program_name:
+            QMessageBox.warning(self, "Error", "Fields can't be empty")
+            return
+
+        if not new_program_code:
+            QMessageBox.warning(self, "Error", "Fields can't be empty")
+            return
+
+        if not new_college_code:
+            QMessageBox.warning(self, "Error", "Fields can't be empty")
+            return
+
+        if not collegeCode_existence(config_file.college_filename, new_college_code):
+            QMessageBox.warning(self, "Error", "College code doesn't exist")
 
         filename = config_file.program_filename
 
@@ -370,17 +470,66 @@ class EditProgramDialog(QDialog):
             data = list(csv_reader)
 
         if 1 <= self.row_index < len(data):
-            data[self.row_index] = updated_row
+            data[self.row_index] = [new_program_code, new_program_name, new_college_code]
 
         with open(filename, "w", newline="") as file:
             csv_writer = csv.writer(file)
             csv_writer.writerows(data)
 
+        if new_program_code != self.old_program_code:
+            self.update_student_program_codes(self.old_program_code, new_program_code)
+            self.parent.load_csv_to_table(self.parent.student_table, config_file.student_filename, "STUDENTS")
+
         print(" ✅Program data updated succesfully.")
 
-        self.parent.load_csv_to_table(self.parent.program_table, filename, "PROGRAMS")
+        self.parent.load_csv_to_table(self.parent.student_table, config_file.student_filename, "STUDENTS")
+        self.parent.load_csv_to_table(self.parent.program_table, config_file.program_filename, "PROGRAMS")
 
-        self.accept()        
+        self.accept()
+
+    def update_student_program_codes(self, old_code, new_code):
+        student_filename = config_file.student_filename
+        updated_data = []
+
+        with open(student_filename, "r", newline="") as file:
+            csv_reader = csv.reader(file)
+            data = list(csv_reader)
+
+        if not data:
+            print("⚠️ Warning: student.csv is empty or missing headers")
+            return
+        
+        header = data[0] if len(data) > 0 else None
+        rows = data[1:]  if len(data) > 1 else []
+
+        print(f"📄 Loaded {len(rows)} rows from program.csv")       
+
+        for row in rows:
+            if len(row) < 6:
+                print(f"⚠ Skipping invalid row: {row}")
+                continue
+
+            original_code = row[5].strip()
+            print(f"🔎 Checking row: {row}")
+
+            if original_code == old_code:  # Check the correct column
+                print(f"📝 Updating: {original_code} → {new_code}")
+                row[5] = new_code
+
+            updated_data.append(row)
+
+        if not updated_data:
+            print("❌ No updated made to studentInfo.csv")
+            return
+        
+        with open(student_filename, "w", newline="") as file:
+            csv_writer = csv.writer(file)
+            if header:
+                csv_writer.writerow(header)
+
+            csv_writer.writerows(updated_data)
+
+        print(f"✅ Successfully updated {old_code} → {new_code} in studentInfo.csv")
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -542,20 +691,12 @@ class MainWindow(QMainWindow):
         #weirdly ako index ga start sa [1] and not [0], therefore permi ga bug kay akong [1] is my header
         row_index = row_index + 1
 
-        #Debug message
-        #print("📂 Before Deletion:", data)
-
         if row_index < 1 or row_index >=len(data):
             print("Invalid row index. Skipping deletion.")
             return
-        
-        #Debug message
-        #print(f"📂Deleting row: {row_index}, Total CSV rows: {len(data)}")
 
+        deleted_row = data[row_index]
         del data[row_index]
-
-        #debug message
-        #print("📂 After Deletion:", data)
 
         with open(filename, "w", newline="") as file:
             csv_writer = csv.writer(file)
@@ -564,6 +705,15 @@ class MainWindow(QMainWindow):
         table_widget.removeRow(row_index)
 
         print("Row deleted successfully and CSV updated.")
+
+        if filename == config_file.college_filename:
+            #TODO:
+            deleted_college_code = deleted_row[0]  # Get deleted college_code
+            self.update_programs_after_college_delete(deleted_college_code)
+
+        if filename == config_file.program_filename:
+            deleted_program_code = deleted_row[0]
+            self.update_students_after_program_delete(deleted_program_code)
 
         if filename == config_file.student_filename:
             table_type = "STUDENTS"
@@ -677,6 +827,66 @@ class MainWindow(QMainWindow):
         # Perform sorting in Ascending Order
         #table_widget.sortItems(selected_sort_index, QtCore.Qt.SortOrder.AscendingOrder)
         #print(f"✅ {table_type} Table sorted by Column {selected_sort_index} in Ascending Order.")
+
+    def update_programs_after_college_delete(self, deleted_college_code):
+        program_filename = config_file.program_filename
+        updated_data = []
+
+        with open(program_filename, "r", newline="") as csv_file:
+            csv_reader = csv.reader(csv_file)
+            data = list(csv_reader)
+
+        if not data:
+            print("⚠️ Warning: program.csv is empty or missing headers.")
+            return
+    
+        header = data[0]
+        rows = data[1:]
+
+        for row in rows:
+            if row[2] == deleted_college_code:
+                print(f"🔄 Updating program {row[0]} (was under {deleted_college_code}) to 'N/A'")
+                row[2] = "N/A"  # Replace college_code with "N/A"
+            updated_data.append(row)
+
+        with open(program_filename, "w", newline="") as csv_file:
+            csv_writer = csv.writer(csv_file)
+            csv_writer.writerow(header)
+            csv_writer.writerows(updated_data)
+
+        print(f"✅ Programs under {deleted_college_code} updated to 'N/A'.")
+        self.load_csv_to_table(self.program_table, program_filename, "PROGRAMS")
+
+        self.update_students_after_program_delete("N/A")
+
+    def update_students_after_program_delete(self, deleted_program_code):
+        student_filename = config_file.student_filename
+        updated_data = []
+
+        with open(student_filename, "r", newline="") as file:
+            csv_reader = csv.reader(file)
+            data = list(csv_reader)
+
+        if not data:
+            print("⚠️ Warning: student.csv is empty or missing headers.")
+            return
+
+        header = data[0]
+        rows = data[1:]
+
+        for row in rows:
+            if row[5] == deleted_program_code:  # If program_code matches deleted program
+                print(f"🔄 Updating student {row[0]} (was in {deleted_program_code}) to 'Unenrolled'")
+                row[5] = "Unenrolled"  # Replace program_code with "Unenrolled"
+            updated_data.append(row)
+
+        with open(student_filename, "w", newline="") as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(header)
+            csv_writer.writerows(updated_data)
+
+        print(f"✅ Students under {deleted_program_code} updated to 'Unenrolled'.")
+        self.load_csv_to_table(self.student_table, student_filename, "STUDENTS")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv) 

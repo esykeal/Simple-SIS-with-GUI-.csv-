@@ -1,9 +1,9 @@
 program_code,program_name,college_code
-BSCS,BS in Computer Science,CCS
 BSCA,BS in Computer Applications,CCS
-BSIT,BS in Information Technology,CCS
 BSIS,BS in Information System,CCS
 BSCE,BS in Civil Engineering,COE
+BSCS,BS in Computer Science,CCS
+BSIT,BS in Information Technology,CCS
 BSEE,BS in Electrical Engineering,COE
 BSME,BS in Mechanical Engineering,COE
 BA-ENG,BA in English,CASS
