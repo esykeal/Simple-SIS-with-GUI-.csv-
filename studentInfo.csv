@@ -1,6 +1,22 @@
 id_number,first_name,last_name,gender,year_level,program_code
-2023-0002,Kim Gabriel,Nasayao,Male,2,Unenrolled
-2023-1700,Joaquin Mikel,Ermita,Male,2,Unenrolled
-2023-0284,Vincee Ezekiel,Jandayan,Male,2,Unenrolled
-2023-0044,Jann Kezia,Alison,Female,2,Unenrolled
-2023-0001,Gojo,Saturo,Male,2,Unenrolled
+2023-0002,Kim Gabriel,Nasayao,Male,2,BSCS
+2023-1700,Joaquin Mikel,Ermita,Male,2,BSCS
+2023-0284,Vincee Ezekiel,Jandayan,Male,2,BSCS
+2023-0044,Jann Kezia,Alison,Female,2,BSCS
+2023-0001,Gojo,Saturo,Male,2,BSCS
+2025-0001,Anna,Cruz,Female,1,BSIT
+2025-0002,Mark,Reyes,Male,2,BSCA
+2025-0003,Sarah,Lim,Female,3,BSIS
+2025-0004,John,Dela Cruz,Male,4,BSCE
+2025-0005,Emily,Santos,Female,1,BSEE
+2025-0006,Joshua,Tan,Male,2,BSCpE
+2025-0007,Karen,Lopez,Female,3,BSCA
+2025-0008,Luis,Gomez,Male,4,BSIT
+2025-0009,Angela,Mendoza,Female,1,BSIS
+2025-0010,Kevin,Ramos,Male,2,BSCE
+2025-0011,Nicole,Agustin,Female,3,BSEE
+2025-0012,Daniel,Chua,Male,4,BSCpE
+2025-0013,Patricia,Villanueva,Female,1,BSCA
+2025-0014,James,Bautista,Male,2,BSIT
+2025-0015,Christine,Yu,Female,3,BSIS
+

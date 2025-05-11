@@ -583,6 +583,8 @@ class MainWindow(QMainWindow):
         self.ui.programs_icon_only.clicked.connect(lambda: self.ui.stackedWidget.setCurrentIndex(1))
         self.ui.college_icon_only.clicked.connect(lambda: self.ui.stackedWidget.setCurrentIndex(2))
 
+        self.ui.stackedWidget.currentChanged.connect(self.on_page_changed)
+
         #When add [student, program, college] button is clicked, open the respective dialog
         self.ui.addstudent_button.clicked.connect(self.open_add_student_dialog)
         self.ui.addprogram_button.clicked.connect(self.open_add_program_dialog)
@@ -750,6 +752,15 @@ class MainWindow(QMainWindow):
             self.delete_row(table_widget, filename, row_index)
         else:
             print("Cancelled")
+
+    def on_page_changed(self, index):
+    
+        if index == 0:
+            self.ui.SearchFilters.setCurrentIndex(1)  # ID Number
+        elif index == 1:
+            self.ui.SearchFilters.setCurrentIndex(6)  # Program Code
+        elif index == 2:
+            self.ui.SearchFilters.setCurrentIndex(8)  # College Code
 
     #Function for searching
     def search_table(self):

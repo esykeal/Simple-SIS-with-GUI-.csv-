@@ -2,23 +2,7 @@ program_code,program_name,college_code
 BSCA,BS in Computer Applications,CCS
 BSIT,BS in Information Technology,CCS
 BSIS,BS in Information System,CCS
-BS-Math,Bachelor of Science in Mathematics,CSM
-BS-Stat,Bachelor of Science in Statistics,CSM
-BS-Bio,Bachelor of Science in Biology,CSM
-BS-Chem,Bachelor of Science in Chemistry,CSM
 BSCE,Bachelor of Science in Civil Engineering,COE
 BSEE,Bachelor of Science in Electrical Engineering,COE
 BSCpE,Bachelor of Science in Computer Engineering,COE
-BSEnE,Bachelor of Science in Environmental Engineering,COE
-BSEd-Eng,Bachelor of Secondary Education Major in English,CED
-BSEd-Sci,Bachelor of Secondary Education Major in Science,CED
-BEEd,Bachelor of Elementary Education,CED
-BPEd,Bachelor of Physical Education,CED
-BSBA,Bachelor of Science in Business Administration,CEBA
-BSAcc,Bachelor of Science in Accountancy,CEBA
-BSM,Bachelor of Science in Marketing,CEBA
-BSFM,Bachelor of Science in Financial Management,CEBA
-AB-English,Bachelor of Arts in English,CASS
-AB-SocSci,Bachelor of Arts in Social Science,CASS
-AB-Fil,Bachelor of Arts in Filipino,CASS
-AB-Phil,Bachelor of Arts in Philosophy,CASS
+BSCS,BS in Computer Science,CCS
